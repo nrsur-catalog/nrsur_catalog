@@ -1,10 +1,8 @@
 import logging
-import os
-
-import matplotlib.pyplot as plt
 
 from .catalog import Catalog
 from .nrsur_result import NRsurResult
+from .style import set_style
 
 __version__ = "0.0.2"
 __website__ = "https://sxs-collaboration.github.io/"
@@ -16,10 +14,5 @@ __description__ = "GW event posteriors obtained using numerical relativity surro
 __copyright__ = "Copyright 2023 NRSurrogate Catalog Team"
 __contributors__ = "https://github.com/sxs-collaboration/nrsur_catalog/graphs/contributors"
 
-
-
-HERE = os.path.dirname(__file__)
-
 logging.getLogger("bilby").setLevel(logging.ERROR)
-
-plt.style.use(f"{HERE}/style.mplstyle")
+set_style()
