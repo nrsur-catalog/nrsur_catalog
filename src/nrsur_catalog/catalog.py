@@ -166,18 +166,33 @@ class Catalog:
                 posteriors.append(df)
             return pd.concat(posteriors)
 
-    def violin_plot(self, parameter: str) -> plt.Figure:
-        """Generate a violin plot of a parameter."""
+    def violin_plot(self, parameter: str, sort_by='event_name') -> plt.Figure:
+        """Generate a violin plot of a parameter.
+
+        Parameters
+        ----------
+        parameter: str
+            The parameter to plot.
+        sort_by: str
+            Either 'median' or 'event_name'.
+            If 'median', the events will be sorted by the median value of the parameter.
+            If 'event_name', the events will be sorted alphabetically by their name.
+        """
         # posterior subsets for each event
         data = [
             post.values.ravel()
             for post in self.to_dict_of_posteriors([parameter]).values()
         ]
-        means = [np.mean(d) for d in data]
 
-        # sort by mean
-        ylabels = [e for _, e in sorted(zip(means, self.event_names))]
-        data = [d for _, d in sorted(zip(means, data), key=lambda x: x[0])]
+        if sort_by == 'event_name':
+            ylabels = self.event_names
+            data = [d for _, d in sorted(zip(ylabels, data))]
+        elif sort_by == 'median':
+            medians = [np.mean(d) for d in data]
+            ylabels = [e for _, e in sorted(zip(medians, self.event_names))]
+            data = [d for _, d in sorted(zip(medians, data), key=lambda x: x[0])]
+        else:
+            raise ValueError(f"sort_by must be 'event_name' or 'median', not {sort_by}")
 
         fig, ax = plt.subplots(figsize=(7, self.n * 0.8))
         ax.tick_params(axis="x", bottom=True, top=True, labelbottom=True, labeltop=True)
@@ -243,7 +258,7 @@ class Catalog:
 
     @property
     def event_names(self) -> List[str]:
-        """Return a list of loaded events in the catalog object"""
+        """Return a list of loaded events in the catalog object (sorted alphabetically)"""
         return sorted(list(self._df.event.unique()))
 
     @property

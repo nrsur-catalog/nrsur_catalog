@@ -1,5 +1,5 @@
 INTERESTING_PARAMETERS = {
-    "Mass Parameters": ["mass_1", "mass_2", "chirp_mass", "mass_ratio"],
+    "Mass Parameters": ["mass_1_source", "mass_2_source", "chirp_mass", "mass_ratio"],
     "Spin Parameters": ["a_1", "a_2", "tilt_1", "tilt_2", "chi_eff", "chi_p"],
     "Localisation Parameters": [
         "ra",
@@ -23,8 +23,10 @@ INTERESTING_PARAMETERS = {
 CATALOG_MAIN_COLOR = "tab:orange"
 
 LATEX_LABELS = dict(
-    mass_1=r"$m_1\ [M_{\odot}]$",
-    mass_2=r"$m_2\ [M_{\odot}]$",
+    mass_1=r"$m_1^{\rm det}\ [M_{\odot}]$",
+    mass_2=r"$m_2^{\rm det}\ [M_{\odot}]$",
+    mass_1_source=r"$m_1^{\rm src}\ [M_{\odot}]$",
+    mass_2_source=r"$m_2^{\rm src}\ [M_{\odot}]$",
     chirp_mass=r"$\mathcal{M}\ [M_{\odot}]$",
     mass_ratio=r"$q$",
     a_1=r"$a_1$",

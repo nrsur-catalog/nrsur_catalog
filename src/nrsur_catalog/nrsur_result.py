@@ -35,10 +35,10 @@ class NRsurResult(CompactBinaryCoalescenceResult):
 
     @classmethod
     def load(
-        cls,
-        event_name: str,
-        cache_dir: Optional[str] = DEFAULT_CACHE_DIR,
-        event_path: Optional[str] = None,
+            cls,
+            event_name: str,
+            cache_dir: Optional[str] = DEFAULT_CACHE_DIR,
+            event_path: Optional[str] = None,
     ) -> "NRsurResult":
         """Load a result (either by downloading or from a local dir).
 
@@ -135,21 +135,21 @@ class NRsurResult(CompactBinaryCoalescenceResult):
         )
 
     def plot_signal(
-        self,
-        n_samples: Optional[int] = 1000,
-        level: Optional[float] = 0.9,
-        color: Optional[str] = CATALOG_MAIN_COLOR,
-        polarisation: Optional[str] = "plus",
-        outdir: Optional[str] = "",
+            self,
+            n_samples: Optional[int] = 1000,
+            level: Optional[float] = None,
+            color: Optional[str] = CATALOG_MAIN_COLOR,
+            polarisation: Optional[str] = "plus",
+            outdir: Optional[str] = "",
     ) -> Union[plt.Figure, None]:
-        """Generate a signal plot of the event
+        """Generate a signal 'trace' plot of the event waveform.
 
         Parameters
         ----------
         n_samples: int
             The number of samples to use in the plot
         level: float
-            The credible level to use in the plot (default 0.9)
+            The credible level to use in the plot (default None)
         color: str
             The color of the waveform.
         polarisation: str
@@ -168,11 +168,6 @@ class NRsurResult(CompactBinaryCoalescenceResult):
         samples = self.posterior.sample(n_samples, replace=False)
         samples = samples.reset_index(drop=True)
         base_params = dict(samples.iloc[0])
-
-        delta = (1 + level) / 2
-        upper_percentile = delta * 100
-        lower_percentile = (1 - delta) * 100
-        ci = int(upper_percentile - lower_percentile)
 
         # Generate the plotting data
         waveform_generator = self.__get_waveform_generator()
@@ -200,23 +195,32 @@ class NRsurResult(CompactBinaryCoalescenceResult):
             waveforms[i] = waveform_generator.time_domain_strain(params)[polarisation]
         waveforms = np.roll(waveforms, 4 * len(base_wf) // 5, axis=1)
 
-        median = np.median(waveforms, axis=0)
-        lower, upper = np.quantile(
-            waveforms, [lower_percentile / 100, upper_percentile / 100], axis=0
-        )
-
-        # Plot the data
         fig, ax = plt.subplots(1, 1, figsize=(6, 5))
-        ax.plot(time_idx, median, color=color)
-        ax.fill_between(
-            time_idx,
-            lower,
-            upper,
-            alpha=0.3,
-            label=f"{ci}% credible region",
-            color=color,
-            linewidth=0,
-        )
+        if level is not None:
+            # Calculate the credible region
+            delta = (1 + level) / 2
+            upper_percentile = delta * 100
+            lower_percentile = (1 - delta) * 100
+            ci = int(upper_percentile - lower_percentile)
+            median = np.median(waveforms, axis=0)
+            lower, upper = np.quantile(
+                waveforms, [lower_percentile / 100, upper_percentile / 100], axis=0
+            )
+
+            # Plot the data
+            ax.plot(time_idx, median, color=color)
+            ax.fill_between(
+                time_idx,
+                lower,
+                upper,
+                alpha=0.3,
+                label=f"{ci}% credible region",
+                color=color,
+                linewidth=0,
+            )
+        else:
+            for w in waveforms:
+                ax.plot(time_idx, w, color=color, alpha=0.01)
         ax.axis("off")
         outdir = self.outdir if outdir == "" else outdir
         filename = os.path.join(outdir, self.label + "_waveform.png")
@@ -225,14 +229,14 @@ class NRsurResult(CompactBinaryCoalescenceResult):
         return fig
 
     def plot_corner(
-        self,
-        parameters: Optional[List[str]] = None,
-        priors: Optional[bool] = None,
-        titles: Optional[List[str]] = True,
-        save: Optional[bool] = False,
-        filename: Optional[str] = None,
-        dpi: Optional[int] = 300,
-        **kwargs,
+            self,
+            parameters: Optional[List[str]] = None,
+            priors: Optional[bool] = None,
+            titles: Optional[List[str]] = True,
+            save: Optional[bool] = False,
+            filename: Optional[str] = None,
+            dpi: Optional[int] = 300,
+            **kwargs,
     ) -> Union[plt.Figure, None]:
         labels = []
         if parameters is not None:
