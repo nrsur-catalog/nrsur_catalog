@@ -1,5 +1,6 @@
 import os
 import re
+import datetime
 
 import numpy as np
 import requests
@@ -52,6 +53,13 @@ def get_event_name(s: str):
         logger.debug(f"Could not parse event name from {s}")
         return None
 
+def get_gps_time(s: str)->int:
+    """
+    eg G150914_095045 --> GPS(2015-09-14T09:50:45)
+    """
+    t1 = datetime.datetime.strptime(s, "GW%y%m%d_%H%M%S")
+    t0 = datetime.datetime(1980, 1, 6)
+    return int((t1-t0).total_seconds())
 
 def get_dir_tree(path):
     """Get a directory tree (in a string)"""

@@ -59,4 +59,5 @@ def get_analysed_event_names(lvk_posteriors=False) -> List[str]:
     events = list(set(get_zenodo_urls(lvk_posteriors).keys()))
     # remove None from the list
     events = [event for event in events if event is not None]
+
     return sorted(events)

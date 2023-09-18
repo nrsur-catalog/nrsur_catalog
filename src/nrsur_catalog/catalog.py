@@ -22,6 +22,7 @@ from .utils import (
     LATEX_LABELS,
     format_qts_to_latex,
     get_event_name,
+    get_gps_time
 )
 
 POSTERIORS_TO_KEEP = list(
@@ -176,18 +177,20 @@ class Catalog:
         sort_by: str
             Either 'median' or 'event_name'.
             If 'median', the events will be sorted by the median value of the parameter.
-            If 'event_name', the events will be sorted alphabetically by their name.
+            If 'event_name', the events will be sorted chronologically by their name.
         """
         # posterior subsets for each event
-        data = [
-            post.values.ravel()
-            for post in self.to_dict_of_posteriors([parameter]).values()
-        ]
+
 
         if sort_by == 'event_name':
-            ylabels = self.event_names
-            data = [d for _, d in sorted(zip(ylabels, data))]
+            ylabels = self.event_names[::-1]
+            data = self.to_dict_of_posteriors([parameter])
+            data = [data[name][parameter].values.ravel() for name in ylabels]
         elif sort_by == 'median':
+            data = [
+                post.values.ravel()
+                for post in self.to_dict_of_posteriors([parameter]).values()
+            ]
             medians = [np.mean(d) for d in data]
             ylabels = [e for _, e in sorted(zip(medians, self.event_names))]
             data = [d for _, d in sorted(zip(medians, data), key=lambda x: x[0])]
@@ -258,8 +261,9 @@ class Catalog:
 
     @property
     def event_names(self) -> List[str]:
-        """Return a list of loaded events in the catalog object (sorted alphabetically)"""
-        return sorted(list(self._df.event.unique()))
+        """Return a list of loaded events in the catalog object (sorted chronologically)"""
+        names = list(self._df.event.unique())
+        return sorted(names, key=lambda x: get_gps_time(x))
 
     @property
     def n(self) -> int:

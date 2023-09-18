@@ -138,10 +138,12 @@ class NRsurResult(CompactBinaryCoalescenceResult):
             self,
             n_samples: Optional[int] = 1000,
             level: Optional[float] = None,
-            color: Optional[str] = CATALOG_MAIN_COLOR,
+            overplot_max_lnl: Optional[bool] = True,
             polarisation: Optional[str] = "plus",
             outdir: Optional[str] = "",
-    ) -> Union[plt.Figure, None]:
+            overplot_kwargs: Optional[dict] = {},
+            kwargs: Optional[dict] = {},
+    ) -> plt.Figure:
         """Generate a signal 'trace' plot of the event waveform.
 
         Parameters
@@ -150,12 +152,16 @@ class NRsurResult(CompactBinaryCoalescenceResult):
             The number of samples to use in the plot
         level: float
             The credible level to use in the plot (default None)
-        color: str
-            The color of the waveform.
+        overplot_max_lnl: bool
+            If True, overplot the waveform with the maximum log-likelihood
         polarisation: str
             The polarisation to plot
         outdir:str
             The outdir to save the plot. If '' not saved.
+        overplot_kwargs: dict
+            Kwargs to pass to the overplotted MaxL waveform
+        kwargs: dict
+            Kwargs to pass to the plot
 
         """
 
@@ -190,37 +196,52 @@ class NRsurResult(CompactBinaryCoalescenceResult):
         time_idx = np.arange(len(base_wf))
         waveforms = np.zeros((n_samples, len(base_wf)))
 
+        # Max LnL waveform
+        max_idx = np.argmax(self.posterior["log_likelihood"])
+        max_lnl_params = dict(self.posterior.iloc[max_idx])
+        max_lnl_wf = waveform_generator.time_domain_strain(max_lnl_params)[polarisation]
+
         for i, params in samples.iterrows():
             params = dict(params)
             waveforms[i] = waveform_generator.time_domain_strain(params)[polarisation]
         waveforms = np.roll(waveforms, 4 * len(base_wf) // 5, axis=1)
+        max_lnl_wf = np.roll(max_lnl_wf, 4 * len(base_wf) // 5)
 
         fig, ax = plt.subplots(1, 1, figsize=(6, 5))
+
+        overplot_kwargs["color"] = overplot_kwargs.get("color", CATALOG_MAIN_COLOR)
+        overplot_kwargs["alpha"] = overplot_kwargs.get("linewidth", 0.7)
+        kwargs["color"] = kwargs.get("color", CATALOG_MAIN_COLOR)
         if level is not None:
             # Calculate the credible region
             delta = (1 + level) / 2
             upper_percentile = delta * 100
             lower_percentile = (1 - delta) * 100
             ci = int(upper_percentile - lower_percentile)
-            median = np.median(waveforms, axis=0)
             lower, upper = np.quantile(
                 waveforms, [lower_percentile / 100, upper_percentile / 100], axis=0
             )
 
+            kwargs['alpha'] = kwargs.get('alpha', 0.3)
+            kwargs['linewidth'] = kwargs.get('linewidth', 0)
+
             # Plot the data
-            ax.plot(time_idx, median, color=color)
             ax.fill_between(
                 time_idx,
                 lower,
                 upper,
-                alpha=0.3,
                 label=f"{ci}% credible region",
-                color=color,
-                linewidth=0,
+                **kwargs,
             )
         else:
+            kwargs['alpha'] = kwargs.get('alpha', 0.01)
+            kwargs['linewidth'] = kwargs.get('linewidth', 0.5)
             for w in waveforms:
-                ax.plot(time_idx, w, color=color, alpha=0.01)
+                ax.plot(time_idx, w, **kwargs)
+
+        if overplot_max_lnl:
+            ax.plot(time_idx, max_lnl_wf, **overplot_kwargs)
+
         ax.axis("off")
         outdir = self.outdir if outdir == "" else outdir
         filename = os.path.join(outdir, self.label + "_waveform.png")
