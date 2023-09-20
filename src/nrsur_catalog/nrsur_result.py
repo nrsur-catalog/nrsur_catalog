@@ -92,15 +92,18 @@ class NRsurResult(CompactBinaryCoalescenceResult):
         summary_str = []
         priors = []
 
-        for _, parameters in INTERESTING_PARAMETERS.items():
-            for parameter in parameters:
-                if parameter in self.posterior:
-                    selected_parameters.append(LATEX_LABELS[parameter])
-                    summary_str.append(get_1d_summary_str(self.posterior[parameter]))
-                    pri = self.priors.get(parameter, "$-$")
-                    if pri != "$-$":
-                        pri = prior_to_str(pri)
-                    priors.append(pri)
+        prior_keys = list(self.priors.keys())
+        PARAMS = prior_keys + [p for p in INTERESTING_PARAMETERS if p not in prior_keys]
+        # remove calibration parameters
+        PARAMS = [p for p in PARAMS if "calibration" not in p]
+        for parameter in PARAMS:
+            if parameter in self.posterior:
+                selected_parameters.append(LATEX_LABELS[parameter])
+                summary_str.append(get_1d_summary_str(self.posterior[parameter]))
+                pri = self.priors.get(parameter, "$-$")
+                if pri != "$-$":
+                    pri = prior_to_str(pri)
+                priors.append(pri)
 
         df = pd.DataFrame(
             {
@@ -171,7 +174,9 @@ class NRsurResult(CompactBinaryCoalescenceResult):
                 "n_samples > len(posterior), using n_samples = len(posterior)"
             )
 
-        samples = self.posterior.sample(n_samples, replace=False)
+        weights = self.posterior["log_likelihood"]
+        weights = np.exp(weights - np.max(weights))
+        samples = self.posterior.sample(n_samples, replace=False, weights=weights)
         samples = samples.reset_index(drop=True)
         base_params = dict(samples.iloc[0])
 
@@ -259,6 +264,8 @@ class NRsurResult(CompactBinaryCoalescenceResult):
             dpi: Optional[int] = 300,
             **kwargs,
     ) -> Union[plt.Figure, None]:
+
+        # set font to serifs in a context manager
         labels = []
         if parameters is not None:
             labels = [LATEX_LABELS[p] for p in parameters]
@@ -268,7 +275,8 @@ class NRsurResult(CompactBinaryCoalescenceResult):
             kwargs["color"] = CATALOG_MAIN_COLOR
 
         return super(NRsurResult, self).plot_corner(
-            parameters, priors, titles, save, filename, dpi, **kwargs
+            parameters, priors, titles, save, filename, dpi, **kwargs,
+            label_kwargs=dict(font="Computer Modern", fontsize=16),
         )
 
     def plot_lvk_comparison_corner(self, parameters: List[str], **kwargs):

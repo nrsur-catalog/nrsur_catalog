@@ -25,9 +25,7 @@ from .utils import (
     get_gps_time
 )
 
-POSTERIORS_TO_KEEP = list(
-    chain.from_iterable(v for v in INTERESTING_PARAMETERS.values())
-)
+POSTERIORS_TO_KEEP = INTERESTING_PARAMETERS
 # POSTERIORS_TO_KEEP += ["log_likelihood", "log_prior"]
 MAX_SAMPLES = 10000
 CATALOG_FN = "downsampled_posteriors.h5"

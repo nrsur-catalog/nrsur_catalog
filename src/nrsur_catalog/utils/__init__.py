@@ -12,7 +12,6 @@ from .constants import (
     CATALOG_MAIN_COLOR,
     INTERESTING_PARAMETERS,
     LATEX_LABELS,
-    LOG_PARAMS,
 )
 from .overlaid_corner import plot_overlaid_corner
 from .pesummary_result_to_bilby_result import pesummary_to_bilby_result
