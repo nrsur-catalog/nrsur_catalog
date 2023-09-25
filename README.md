@@ -1,5 +1,5 @@
 # NRSurrogate catalog
-![PyPI](https://img.shields.io/pypi/v/nrsur_catalog)
+[![PyPI version](https://badge.fury.io/py/nrsur-catalog.svg)](https://badge.fury.io/py/nrsur-catalog)
 
 This repository contains the python package source code for the NRSurrogate Catalog API.
 Install the package with
