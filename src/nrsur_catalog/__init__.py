@@ -4,7 +4,7 @@ from .catalog import Catalog
 from .nrsur_result import NRsurResult
 from .style import set_style
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __website__ = "https://sxs-collaboration.github.io/"
 __uri__ = "https://github.com/nrsur-catalog/nrsur_catalog"
 __author__ = "NRSurrogate Catalog Team"
