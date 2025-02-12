@@ -1,5 +1,5 @@
 INTERESTING_PARAMETERS = [
-    "mass_1_source", "mass_2_source", "mass_ratio", "chirp_mass_source"
+    "mass_1_source", "mass_2_source", "mass_ratio", "chirp_mass_source",
     "a_1", "a_2", "tilt_1", "tilt_2", "chi_eff", "chi_p", "ra",
     "dec",
     "geocent_time",

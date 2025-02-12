@@ -1,3 +1,3 @@
 # README 
 
-This is where the docs for the `nrsur_catalog` package API will exist.
+Docs live here: https://nrsur-catalog.github.io/NRSurCat-1/api.html

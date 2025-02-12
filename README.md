@@ -9,3 +9,6 @@ pip install nrsur_catalog
 ```
 
 This package will allow users to download catalog data from the command line, load results, and make plots from within Python.  Please visit the [NRSurCat website](https://nrsur-catalog.github.io/NRSurCat-1/intro.html) for more information.
+
+Docs live here:
+https://nrsur-catalog.github.io/NRSurCat-1/api.html
